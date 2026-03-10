@@ -1,0 +1,112 @@
+# Stack for a lambda, API Gateway API and an S3 bucket
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:  # passed on stack create or update, ... --parameters ParameterKey=InstanceType,ParameterVa...
+  ProjectName:
+    Type: String
+    Default: 'plant-guard'
+  Suffix:
+    Type: String
+    Default: 'test'
+  DeviceApiKey:
+    Type: String
+    Description: Key that device sends with each event
+
+Resources:
+  # ------------------------------------------------- Lambdas ---------------------------------------------------
+  EventsLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda.lambda_handler
+      FunctionName: !Sub '${ProjectName}-events-lambda-${Suffix}'
+      Description: Receives events through POST and returns html to GET
+      Runtime: python3.12
+      Events:
+        PostEvent:
+          Type: Api
+          Properties:
+            Path: /event
+            Method: post
+            RestApiId:
+              Ref: ApiGatewayApi
+        GetHtml:
+          Type: Api
+          Properties:
+            Path: /dashboard
+            Method: get
+            RestApiId:
+              Ref: ApiGatewayApi
+      Environment:
+        Variables:
+          DEVICE_API_KEY: !Ref DeviceApiKey
+          BUCKET_NAME: !Ref DataBucket
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+              - s3:ListBucket
+              - s3:GetObject
+              - s3:PutObject
+            Resource:
+              - Fn::GetAtt: [DataBucket, Arn]
+              - Fn::Join: [ '/', [ Fn::GetAtt: [DataBucket, Arn], '*' ] ]  # for Write 
+      Tags:
+        Project: !Ref ProjectName
+        Suffix: !Ref Suffix
+ 
+  # ------------------------------------- APIs -------------------------------------------------------------------
+  ApiGatewayApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub '${ProjectName}-API-${Suffix}'
+      StageName: !Ref Suffix
+      Cors:  # doesn't work without openapi definition?? https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-cors.html
+        AllowMethods: "'GET,POST,OPTIONS'"
+        AllowHeaders: "'X-Forwarded-For, Authorization, Content-Type'"
+        AllowOrigin: "'*'"
+        MaxAge: "'600'"
+      Tags:
+        Project: !Ref ProjectName
+        Suffix: !Ref Suffix
+     
+  # there should be a parameter in ApiGateway that fixes it all without this separate response
+  # see https://stackoverflow.com/a/59081762
+  Response4xx:   # to fix "Failed to fetch", add cors headers to non-simple proxy responses when authorizer returns 401 or 403
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Headers: "'X-Forwarded-For, Authorization, Content-Type'"
+        gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS'"
+      ResponseType: DEFAULT_4XX
+      RestApiId: !Ref ApiGatewayApi
+
+  Response5xx:  # just in case
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Headers: "'X-Forwarded-For, Authorization, Content-Type'"
+        gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS'"
+      ResponseType: DEFAULT_5XX
+      RestApiId: !Ref ApiGatewayApi
+
+  # ------------------------------------------ S3 -------------------------------------------------------------
+  DataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${ProjectName}-data-bucket-${Suffix}'
+      VersioningConfiguration: 
+        Status: Suspended  # no versioning, other option - Enabled
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Suffix
+          Value: !Ref Suffix
+
+Outputs:
+  APIEndpoint:
+    Description: API Gateway Endpoint
+    Value: !Sub 'https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/${Suffix}'
+  BucketName:
+    Description: S3 Bucket Name
+    Value: !Ref DataBucket

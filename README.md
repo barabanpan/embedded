@@ -6,3 +6,4 @@
  - 0003 - Photoresistors + RGB LED
  - 0004 - Resistor ladder
  - 0005 - LED control via WiFi with ESP8266 ESP-01
+ - 0006 - Plant guard with ESP8266 ESP-01
