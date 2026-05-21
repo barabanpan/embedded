@@ -1,5 +1,7 @@
 # Ray casting in C++ with esp32-c3
 
+![walk](images/walk.gif)
+
 ## Objective
  - Try ESP32-C3
  - Run in a 3D maze
