@@ -24,3 +24,5 @@ Ray casting algorithm calculates, for 123 rays, distances to the next closest wa
 ## Additional things learned
  - Digital Differential Analyzer algorithm (DDA)
 
+## Useful links
+ - [ASCII 3D engine problem on codingame with great description](https://www.codingame.com/ide/puzzle/lets-make-a-cheap-ascii-3d-engine)
