@@ -21,4 +21,4 @@ Red LED switches state every second (timer interrupt).
 Greeen LED switches state when button is pushed (GPIO interrupt).
 
 ## Useful links
- - ![GPIO interrupts tutorial](https://randomnerdtutorials.com/esp-idf-esp32-gpio-interrupts/)
+ - [GPIO interrupts tutorial](https://randomnerdtutorials.com/esp-idf-esp32-gpio-interrupts/)
