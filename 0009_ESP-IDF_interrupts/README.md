@@ -1,4 +1,4 @@
-# Plant Guard with ESP8266 esp-01
+# First time with ESP-IDF and interrupts
 
 ## Objective
  - Use ESP-IDF for the first time
