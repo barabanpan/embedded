@@ -9,3 +9,4 @@
  - 0006 - Plant guard with ESP8266 ESP-01
  - 0007 - Ray casting + ESP32-C3 + OLED
  - 0008 - ESP-01 + OTA + batteries + Deep Sleep + RC Timing -> learnt that voltage regulators are important
+ - 0009 - First time with ESP-IDF and interrupts
