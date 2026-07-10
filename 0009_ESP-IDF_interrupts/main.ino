@@ -6,6 +6,7 @@
 #include "esp_attr.h"  // for IRAM_ATTR
 #include "esp_timer.h"  // for esp_timer_get_time
 
+// 10, 1, 2 for esp32c3 super mini
 #define TIMER_LED_GPIO 2
 #define BUTTON_LED_GPIO 9
 #define BUTTON_GPIO 8
